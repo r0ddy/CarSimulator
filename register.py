@@ -1,14 +1,16 @@
 from cgitb import reset
 import requests
 import subprocess
+import os
 from dotenv import load_dotenv
 
-load_dotenv()
-PASSWORD = os.getenv("PASSWORD")
+def register_self():
+    load_dotenv()
+    PASSWORD = os.getenv("PASSWORD")
 
-url = 'https://car-simulator-349213.uk.r.appspot.com/register'
-ip = subprocess.getoutput("hostname -I").strip()
-myobj = {'ip': ip, 'type': "controller", 'password': PASSWORD}
+    url = 'https://car-simulator-349213.uk.r.appspot.com/register'
+    ip = subprocess.getoutput("hostname -I").strip()
+    myobj = {'ip': ip, 'type': "controller", 'password': PASSWORD}
 
-res = requests.post(url, json=myobj)
-print(res.text)
+    res = requests.post(url, json=myobj)
+    print(res.text)
