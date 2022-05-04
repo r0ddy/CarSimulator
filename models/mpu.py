@@ -16,32 +16,31 @@ GYRO_YOUT_H  = 0x45
 GYRO_ZOUT_H  = 0x47
 
 class MPU:
-    BUS = smbus.SMBus(1)
-
     def MPU_Init(self):
         #write to sample rate register
-        self.BUS.write_byte_data(self.device_addr, SMPLRT_DIV, 7)
+        self.bus.write_byte_data(self.device_addr, SMPLRT_DIV, 7)
         
         #Write to power management register
-        self.BUS.write_byte_data(self.device_addr, PWR_MGMT_1, 1)
+        self.bus.write_byte_data(self.device_addr, PWR_MGMT_1, 1)
         
         #Write to Configuration register
-        self.BUS.write_byte_data(self.device_addr, CONFIG, 0)
+        self.bus.write_byte_data(self.device_addr, CONFIG, 0)
         
         #Write to Gyro configuration register
-        self.BUS.write_byte_data(self.device_addr, GYRO_CONFIG, 24)
+        self.bus.write_byte_data(self.device_addr, GYRO_CONFIG, 24)
         
         #Write to interrupt enable register
-        self.BUS.write_byte_data(self.device_addr, INT_ENABLE, 1)
+        self.bus.write_byte_data(self.device_addr, INT_ENABLE, 1)
 
-    def __init__(self, device_addr):
+    def __init__(self, device_addr, bus_num):
         self.device_addr = device_addr
+        self.bus = smbus.SMBus(bus_num)
         self.MPU_Init()
 
     def read_raw_data(self, addr):
 	    #Accelero and Gyro value are 16-bit
-        high = self.BUS.read_byte_data(self.device_addr, addr)
-        low = self.BUS.read_byte_data(self.device_addr, addr+1)
+        high = self.bus.read_byte_data(self.device_addr, addr)
+        low = self.bus.read_byte_data(self.device_addr, addr+1)
     
         #concatenate higher and lower value
         value = ((high << 8) | low)
@@ -56,4 +55,29 @@ class MPU:
         gyro_y = self.read_raw_data(GYRO_YOUT_H)
         gyro_z = self.read_raw_data(GYRO_ZOUT_H)
         return gyro_x, gyro_y, gyro_z
+    
+    def read_accel(self):
+        accel_x = self.read_raw_data(ACCEL_XOUT_H)
+        accel_y = self.read_raw_data(ACCEL_YOUT_H)
+        accel_z = self.read_raw_data(ACCEL_ZOUT_H)
+        return accel_x, accel_y, accel_z
+
+    def read_x_angle(self):
+        x, y, z = self.read_accel()
+        return get_x_rotation(x, y, z)
+
+    def read_y_angle(self):
+        x, y, z = self.read_accel()
+        return get_y_rotation(x, y, z)
+
+def dist(a,b):
+    return math.sqrt((a*a)+(b*b))
+
+def get_y_rotation(x,y,z):
+    radians = math.atan2(x, dist(y,z))
+    return -math.degrees(radians)
+
+def get_x_rotation(x,y,z):
+    radians = math.atan2(y, dist(x,z))
+    return math.degrees(radians)
 

@@ -1,16 +1,10 @@
-from cgitb import reset
-import requests
 import subprocess
-import os
-from dotenv import load_dotenv
 
+from gcp_server import send_server
 def register_self():
-    load_dotenv()
-    PASSWORD = os.getenv("PASSWORD")
-
-    url = 'https://car-simulator-349213.uk.r.appspot.com/register'
     ip = subprocess.getoutput("hostname -I").strip()
-    myobj = {'ip': ip, 'type': "controller", 'password': PASSWORD}
+    data = {'ip': ip, 'type': "controller"}
+    print(send_server('/register', data))
 
-    res = requests.post(url, json=myobj)
-    print(res.text)
+def get_devices():  
+    print(send_server('/devices'))
