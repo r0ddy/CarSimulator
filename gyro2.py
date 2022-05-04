@@ -60,7 +60,7 @@ def get_x_rotation(x,y,z):
     radians = math.atan2(y, dist(x,z))
     return math.degrees(radians)
 
-bus = smbus.SMBus(1) 	# or bus = smbus.SMBus(0) for older version boards
+bus = smbus.SMBus(0) 	# or bus = smbus.SMBus(0) for older version boards
 Device_Address = 0x68   # MPU6050 device address
 
 MPU_Init()
