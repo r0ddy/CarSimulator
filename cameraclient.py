@@ -3,7 +3,9 @@ import io
 import picamera
 from threading import Condition
 import base64
+from models import bot
 
+bot.init()
 sio = socketio.Client()
 sio.connect('ws://car-simulator-349213.uk.r.appspot.com/')
 sio.emit('join',{'device_type': 'bot'})
@@ -19,6 +21,13 @@ def server_on(data):
 @sio.on('notif')
 def notif(data):
     print(data)
+    global start_time
+    if data['mode'] == 'D' or data['mode'] == 'R':
+        reverse = data['mode'] == 'R'
+        bot.accelerate(data['speed'], reverse)
+        bot.turn(data['steering'], reverse)
+    elif data['mode'] == 'P':
+        bot.stop()
 
 class StreamingOutput(object):
     def __init__(self):
@@ -39,10 +48,12 @@ class StreamingOutput(object):
 
 sio.wait()
 sio.connect(LOCAL_SERVER_URL)
+sio.emit('join',{'device_type': 'bot'})
 
 with picamera.PiCamera(resolution='640x480', framerate=24) as camera:
     output = StreamingOutput()
     camera.start_recording(output, format='mjpeg')
+    camera.rotation = 180
     while True:
         with output.condition:
             output.condition.wait()

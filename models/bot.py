@@ -1,4 +1,3 @@
-from turtle import left, right
 from .motor import Motor
 
 left_motor = Motor(in1=5, in2=6, pwm=26)
@@ -12,20 +11,32 @@ MAX_ANGLE = 100
 MIN_ANGLE = -100
 currAngle = 0
 
-def accelerate(amount):
-    currSpeed = max(min(MAX_SPEED, currSpeed + amount), MIN_SPEED)
-    changeSpeed()
+def init():
+    global currSpeed, currAngle
+    currSpeed = 0
+    currAngle = 0
 
-def turn(amount):
-    currAngle = max(min(MAX_ANGLE, currAngle + amount), MIN_ANGLE)
-    changeSpeed()
+def accelerate(amount, reverse=False):
+    global currSpeed
+    currSpeed = max(min(MAX_SPEED, amount), MIN_SPEED)
+    changeSpeed(reverse)
 
-def changeSpeed():
+def turn(amount, reverse=False):
+    global currAngle
+    currAngle = max(min(MAX_ANGLE, amount), MIN_ANGLE)
+    changeSpeed(reverse)
+
+def changeSpeed(reverse=False):
+    global currAngle, currSpeed
     leftSpeed = currSpeed
     rightSpeed = currSpeed
     if currAngle > 0:
         rightSpeed *= 1 - currAngle / 100
     elif currAngle < 0:
         leftSpeed *= 1 + currAngle / 100
-    left_motor.change_speed(leftSpeed)
-    right_motor.change_speed(rightSpeed)
+    right_motor.change_speed(leftSpeed, reverse)
+    left_motor.change_speed(rightSpeed, reverse)
+
+def stop():
+    left_motor.set_direction(Motor.STOP)
+    right_motor.set_direction(Motor.STOP)

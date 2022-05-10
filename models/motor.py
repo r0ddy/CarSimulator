@@ -42,10 +42,12 @@ class Motor:
     def StopPWM(self):
         self.pwm.stop()
 
-    def change_speed(self, amount):
-        self.speed = max(min(100, self.speed + amount), 0)
+    def change_speed(self, amount, reverse=False):
+        self.speed = max(min(100, amount), 0)
         if self.speed == 0:
             self.set_direction(self.STOP)
+        elif reverse:
+            self.set_direction(self.CCW)
         else:
             self.set_direction(self.CW)
         self.pwm.ChangeDutyCycle(self.speed)
