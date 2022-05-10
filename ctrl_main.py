@@ -6,6 +6,12 @@ from controller.dashboard import drawDashboard
 from controller.color import BLACK
 from models.mpu import MPU
 import RPi.GPIO as GPIO
+import time
+
+# delay for 10 seconds without sleep
+start_time = time.time()
+while time.time() - start_time <= 10:
+    pass
 
 # initialize MPUs
 steering = MPU(0x68, 0)
