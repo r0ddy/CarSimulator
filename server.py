@@ -1,7 +1,12 @@
 import asyncio
 import subprocess
 
+from motor import Motor
+
 HOST = subprocess.getoutput("hostname -I").strip()
+
+# setup motor pins
+motor = Motor(in1=5, in2=6, pwm=26)
 
 async def handle_echo(reader, writer):
     while True:
@@ -9,6 +14,17 @@ async def handle_echo(reader, writer):
         message = data.decode()
         if message == "exit":
             break
+
+        msg_mtr_cmd = {
+            "stop": (Motor.ZERO, Motor.STOP),
+            "half": (Motor.HALF, Motor.CW),
+            "full": (Motor.FULL, Motor.CW)
+        }
+
+        if message in msg_mtr_cmd:
+            speed, dir = msg_mtr_cmd[message]
+            motor.SetSpeedAndDir(speed, dir)
+
         addr = writer.get_extra_info('peername')
 
         print(f"Received {message!r} from {addr!r}")

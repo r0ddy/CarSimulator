@@ -3,9 +3,22 @@ import io
 import picamera
 from threading import Condition
 import base64
+
 sio = socketio.Client()
 sio.connect('ws://car-simulator-349213.uk.r.appspot.com/')
 sio.emit('join',{'device_type': 'bot'})
+
+LOCAL_SERVER_URL = None
+
+@sio.on('server_on')
+def server_on(data):
+    global LOCAL_SERVER_URL
+    LOCAL_SERVER_URL = "ws://{}:3000/".format(data["ip"])
+    sio.disconnect()
+
+@sio.on('notif')
+def notif(data):
+    print(data)
 
 class StreamingOutput(object):
     def __init__(self):
@@ -23,6 +36,9 @@ class StreamingOutput(object):
                 self.condition.notify_all()
             self.buffer.seek(0)
         return self.buffer.write(buf)
+
+sio.wait()
+sio.connect(LOCAL_SERVER_URL)
 
 with picamera.PiCamera(resolution='640x480', framerate=24) as camera:
     output = StreamingOutput()
