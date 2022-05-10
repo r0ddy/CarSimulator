@@ -42,6 +42,7 @@ def server_on(data):
 # wait until local server url received
 client.wait()
 client.connect(LOCAL_SERVER_URL)
+client.emit('join', {'device_type': 'controller'})
 
 # map bounds on acceloremeter angles to percentage
 def remake_bounds(zero, hundred):
@@ -126,7 +127,7 @@ while True:
         client.emit('send_msg', {
             'device_type': 'controller',
             'msg': {
-                'acceleration': acceleration,
+                'speed': acceleration,
                 'mode': mode,
                 'steering': turn(steering_p)
             }
