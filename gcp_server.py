@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 import requests
 
-load_dotenv()
+load_dotenv("/home/ctrl/Desktop/CarSimulator/.env")
 PASSWORD = os.getenv("PASSWORD")
 BASE_URL = "https://car-simulator-349213.uk.r.appspot.com"
 

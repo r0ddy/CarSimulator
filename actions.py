@@ -13,8 +13,8 @@ def action_loop():
     while True:
         action = {
             "brake": brake.read_x_angle(),
-            "gas": gas.read_y_angle(),
+            "gas": gas.read_x_angle(),
             "steering": steering.read_x_angle(),
         }
-        notify_bot(action)
+        print(action)
         time.sleep(0.5)

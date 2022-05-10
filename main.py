@@ -1,5 +1,5 @@
 import register
 import actions
+import time
 
-register.register_self()
 actions.action_loop()
