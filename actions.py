@@ -18,3 +18,5 @@ def action_loop():
         }
         print(action)
         time.sleep(0.5)
+
+action_loop()
