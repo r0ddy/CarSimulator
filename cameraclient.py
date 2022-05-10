@@ -4,6 +4,12 @@ import picamera
 from threading import Condition
 import base64
 from models import bot
+import time
+
+# delay for 10 seconds without sleep
+start_time = time.time()
+while time.time() - start_time <= 10:
+    pass
 
 bot.init()
 sio = socketio.Client()
