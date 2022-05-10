@@ -1,4 +1,5 @@
 import os
+import socketio
 import pygame
 import time
 from controller.dashboard import drawDashboard
@@ -6,16 +7,35 @@ from controller.color import BLACK
 from models.mpu import MPU
 import RPi.GPIO as GPIO
 
-# initialize MPU and pygame
+# initialize MPUs
 steering = MPU(0x68, 0)
 brake = MPU(0x68, 1)
 gas = MPU(0x69, 1)
+
+# initialize piTFT
 os.putenv('SDL_VIDEODRIVER', 'fbcon')
 os.putenv('SDL_FBDEV', '/dev/fb0')
 pygame.init()
 pygame.mouse.set_visible(False)
 size = 320, 240
 screen = pygame.display.set_mode(size)
+
+# initialize sockets.io
+client = socketio.Client()
+client.connect('ws://car-simulator-349213.uk.r.appspot.com/')
+client.emit('join', {'device_type': 'controller'})
+LOCAL_SERVER_URL = None
+
+# wati for local server to turn on and send its ip
+@client.on('server_on')
+def server_on(data):
+    global LOCAL_SERVER_URL
+    LOCAL_SERVER_URL = "ws://{}:3000/".format(data["ip"])
+    client.disconnect()
+
+# wait until local server url received
+client.wait()
+client.connect(LOCAL_SERVER_URL)
 
 # map bounds on acceloremeter angles to percentage
 def remake_bounds(zero, hundred):
@@ -89,10 +109,24 @@ while True:
         steering_a = steering.read_x_angle()
         steering_p = get_steering_percentage(steering_a)
         
+        acceleration = 0
         if mode == "P":
             speed = 0
         else:
-            speed = min(max(accelerate(brake_p, gas_p)+speed, 0), 100)
+            acceleration = accelerate(brake_p, gas_p)
+            speed = min(max(speed+acceleration, 0), 100)
+
+        # emit state
+        client.emit('send_msg', {
+            'device_type': 'controller',
+            'msg': {
+                'acceleration': acceleration,
+                'mode': mode,
+                'steering': turn(steering_p)
+            }
+        })
+        print('msg sent')
+
         screen.fill(BLACK)
         drawDashboard(screen, speed, mode)
     else:
